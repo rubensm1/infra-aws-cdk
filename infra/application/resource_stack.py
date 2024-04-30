@@ -8,4 +8,10 @@ class ResourceStack(DeployStepStack):
         return "Resources"
 
     def deploy(self) -> None:
-        return None
+        ecs_container = ECS(
+            self,
+            env=self.env,
+            vpc=self.vpc,
+            service_port=int(self.env.SERVICE_PORT),
+        )
+        ecs_container.create()

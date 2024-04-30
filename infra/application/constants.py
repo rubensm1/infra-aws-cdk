@@ -1,5 +1,5 @@
-APP_NAME = "InfraCDK"
-REP_DIR = "repositories"
+APP_NAME = "Apachezim"
+REP_DIR = "repositories/apache"
 GIT_REPOSITORY = "rubensm1/infra-aws-cdk"
 
 DEV_VPC_ID = "vpc-999999999999"
