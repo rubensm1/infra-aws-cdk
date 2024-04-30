@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "infra_cdk"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [
+    { include = "resources" },
+    { include = "application" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+aws-cdk-lib = "2.79.1"
+constructs = "^10.1.309"
+pytest = "^7.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
