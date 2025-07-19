@@ -7,6 +7,6 @@ CONSTANTS = get_env()
 
 app = cdk.App()
 
-InfraStack(app, f"{CONSTANTS.APP_NAME}InfraStack", env=CONSTANTS)
+InfraStack(app, env=CONSTANTS)
 
 app.synth()

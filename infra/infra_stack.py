@@ -15,10 +15,10 @@ from resources.utils import pascal_case
 
 
 class InfraStack(Stack):
-    def __init__(
-        self, scope: Construct, construct_id: str, env: object, **kwargs
-    ) -> None:
-        super().__init__(scope, construct_id, env=env.ENV, **kwargs)
+    def __init__(self, scope: Construct, env: object, **kwargs) -> None:
+        super().__init__(
+            scope, f"{pascal_case(env.APP_NAME)}InfraStack", env=env.ENV, **kwargs
+        )
 
         vpc = ec2.Vpc.from_lookup(self, "ImportVPC", vpc_id=env.VPC_ID)
 
