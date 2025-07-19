@@ -1,7 +1,7 @@
 from aws_cdk import aws_secretsmanager as secrets
-from resourse import Resource, PathStrFormat
-from parameters_store import ParametersStore
-from utils import snake_case
+from .resourse import Resource, PathStrFormat
+from .parameters_store import ParametersStore
+from .utils import snake_case
 
 
 class SecretManager(Resource):
@@ -13,9 +13,7 @@ class SecretManager(Resource):
             self.scope, "ImportedSecret", secret_complete_arn=secret_arn
         )
 
-    def get_complete_secret_from_arn_in_parameter(
-        self, secret_name
-    ) -> secrets.Secret:
+    def get_complete_secret_from_arn_in_parameter(self, secret_name) -> secrets.Secret:
         parameter_store = ParametersStore(self.scope, self.env)
         pgsql_secret_arn = parameter_store.get_parameter(secret_name)
         return self.get_complete_secret_from_arn(pgsql_secret_arn)
