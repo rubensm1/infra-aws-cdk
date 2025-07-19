@@ -1,6 +1,6 @@
 import os
 
-from resourse import Resource, PathStrFormat
+from .resourse import Resource, PathStrFormat
 
 from aws_cdk import aws_ssm as ssm
 

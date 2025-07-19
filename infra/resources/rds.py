@@ -14,10 +14,12 @@ class ServerlessRDS(Resource):
     db_cluster: rds.ServerlessCluster
     store_path_prefix_combined: str
 
-    def __init__(self, scope: str, vpc: ec2.Vpc):
-        super().__init__(scope)
+    def __init__(self, scope: str, env: object, vpc: ec2.Vpc):
+        super().__init__(scope, env)
         self._vpc = vpc
-        self.store_path_prefix_combined = f"{self.store_path_prefix}{self.get_store_path_prefix_append()}"
+        self.store_path_prefix_combined = (
+            f"{self.store_path_prefix}{self.get_store_path_prefix_append()}"
+        )
 
     def get_path_str_format(self) -> PathStrFormat:
         return PathStrFormat.PASCAL_CASE
@@ -49,7 +51,9 @@ class ServerlessRDS(Resource):
             vpc=self._vpc,
             scaling=self.get_scaling_options(),
             security_groups=[self._create_db_security_group()],
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
         )
 
     def get_secret_name(self) -> str:
@@ -59,7 +63,9 @@ class ServerlessRDS(Resource):
         self.db_cluster = self._create_serverless_cluster()
         # Store secret ARN in Parameter Store
         parameters_store = ParametersStore(self.scope)
-        parameters_store.create_parameter(self.get_secret_name(), self.db_cluster.secret.secret_arn)
+        parameters_store.create_parameter(
+            self.get_secret_name(), self.db_cluster.secret.secret_arn
+        )
 
     @abstractmethod
     def get_store_path_prefix_append(self) -> str:
@@ -86,7 +92,9 @@ class PostgreSQLAuroraServerless(ServerlessRDS):
         return 5432
 
     def get_db_cluster_engine(self) -> rds.IClusterEngine:
-        return rds.DatabaseClusterEngine.aurora_postgres(version=rds.AuroraPostgresEngineVersion.VER_13_6)
+        return rds.DatabaseClusterEngine.aurora_postgres(
+            version=rds.AuroraPostgresEngineVersion.VER_13_6
+        )
 
     def get_scaling_options(self) -> rds.ServerlessScalingOptions:
         return rds.ServerlessScalingOptions(
