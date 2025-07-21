@@ -15,7 +15,7 @@ class SecretManager(Resource):
 
     def get_complete_secret_from_arn_in_parameter(self, secret_name) -> secrets.Secret:
         parameter_store = ParametersStore(self.scope, self.env)
-        pgsql_secret_arn = parameter_store.get_parameter(secret_name)
+        pgsql_secret_arn = parameter_store.get_parameter_value(secret_name)
         return self.get_complete_secret_from_arn(pgsql_secret_arn)
 
     @staticmethod
