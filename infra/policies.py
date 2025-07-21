@@ -5,6 +5,14 @@ from aws_cdk import aws_iam as iam
 pipeline_policy = [
     iam.PolicyStatement(
         actions=[
+            "codestar-connections:UseConnection",
+            "codestar-connections:GetConnection",
+            "codestar-connections:ListConnections",
+        ],
+        resources=["*"],
+    ),
+    iam.PolicyStatement(
+        actions=[
             "codeartifact:GetAuthorizationToken",
             "codeartifact:GetRepositoryEndpoint",
             "codeartifact:ReadFromRepository",
@@ -22,5 +30,64 @@ pipeline_policy = [
         conditions={
             "StringEquals": {"sts:AWSServiceName": "codeartifact.amazonaws.com"}
         },
+    ),
+    iam.PolicyStatement(
+        actions=[
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:DeleteObject",
+            "s3:GetObjectAcl",
+            "s3:ListBucketMultipartUploads",
+            "s3:AbortMultipartUpload",
+            "s3:ListMultipartUploadParts",
+        ],
+        resources=["*"],
+    ),
+    iam.PolicyStatement(
+        actions=[
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:PutObject",
+            "s3:PutObjectAcl",
+            "s3:DeleteObject",
+            "s3:GetObjectAcl",
+            "s3:ListBucketMultipartUploads",
+            "s3:AbortMultipartUpload",
+            "s3:ListMultipartUploadParts",
+            "secretsmanager:GetSecretValue",
+            "secretsmanager:DescribeSecret",
+        ],
+        resources=["*"],
+    ),
+    iam.PolicyStatement(
+        actions=[
+            "ec2:DescribeVpcs",
+            "ec2:DescribeSubnets",
+            "ec2:DescribeRouteTables",
+            "ec2:DescribeVpnGateways",
+        ],
+        resources=["*"],
+    ),
+    iam.PolicyStatement(
+        actions=[
+            "ssm:GetParameter",
+            "ssm:GetParameters",
+            "ssm:GetParametersByPath",
+            "ssm:DescribeParameters",
+        ],
+        resources=["*"],
+    ),
+    iam.PolicyStatement(
+        actions=[
+            "ecr:GetAuthorizationToken",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:CompleteLayerUpload",
+            "ecr:InitiateLayerUpload",
+            "ecr:PutImage",
+            "ecr:UploadLayerPart",
+        ],
+        resources=["*"],
     ),
 ]

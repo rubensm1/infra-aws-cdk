@@ -3,15 +3,18 @@ import os
 from aws_cdk import Stack
 from aws_cdk import aws_ec2 as ec2
 from aws_cdk.pipelines import (
+    CodeBuildOptions,
     CodeBuildStep,
     CodePipeline,
     CodePipelineSource,
     ShellStep,
 )
+from aws_cdk import aws_codebuild as codebuild
 from constructs import Construct
 from pipeline_stage import PipelineStage
 from application.steps import DEPLOY_STEPS
 from resources.utils import pascal_case
+from policies import pipeline_policy
 
 
 class InfraStack(Stack):
@@ -36,17 +39,26 @@ class InfraStack(Stack):
             pipeline_name=f"{pascal_case(env.APP_NAME)}Pileline",
             cross_account_keys=True,
             docker_enabled_for_synth=True,
+            synth_code_build_defaults=CodeBuildOptions(
+                role_policy=pipeline_policy,
+                build_environment=codebuild.BuildEnvironment(
+                    build_image=codebuild.LinuxBuildImage.STANDARD_7_0,
+                    compute_type=codebuild.ComputeType.SMALL,
+                ),
+                # partial_build_spec=codebuild.BuildSpec.from_object({"reports": reports}),
+            ),
             synth=ShellStep(
                 "Synth",
                 input=source_checkout,
                 commands=[
-                    "npm install -g aws-cdk",
+                    "n 20",
                     "curl -sSL https://install.python-poetry.org | python3 -",
-                    "cd infra",
+                    "npm install -g aws-cdk",
+                    "cd infra/aws",
                     "/root/.local/bin/poetry install",
                     "/root/.local/bin/poetry run cdk synth",
                 ],
-                primary_output_directory="infra/cdk.out",
+                primary_output_directory="infra/aws/cdk.out",
             ),
         )
 
