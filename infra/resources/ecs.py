@@ -5,10 +5,12 @@ from aws_cdk import aws_ec2 as ec2
 from aws_cdk import aws_ecs as ecs
 from aws_cdk import aws_ecs_patterns as ecs_patterns
 from aws_cdk import aws_secretsmanager as secrets
+from aws_cdk import aws_ssm as ssm
 from .resourse import Resource, PathStrFormat
 from aws_cdk.aws_ecr_assets import DockerImageAsset
 from .utils import kebab_case
 from .utils import pascal_case
+import json
 
 
 class ECSMemoryCPU:
@@ -72,9 +74,7 @@ class ECSMemoryCPU:
         if self.cpu not in [256, 512, 1024, 2048, 4096, 8192, 16384]:
             raise ValueError("Value of CPU is invalid")
         if self.cpu == 256 and self.mem not in [512, 1024, 2048]:
-            raise ValueError(
-                "Value of CPU is 256 and Memory is not 512, 1024 or 2048"
-            )
+            raise ValueError("Value of CPU is 256 and Memory is not 512, 1024 or 2048")
         if self.cpu == 512 and self.mem not in [1024, 2048, 3072, 4096]:
             raise ValueError(
                 "Value of CPU is 512 and Memory is not 1024, 2048, 3072 or 4096"
@@ -212,7 +212,7 @@ class ECS(Resource):
             assign_public_ip=True,
             listener_port=self.service_port,
             health_check_grace_period=Duration.seconds(300),
-            service_name=f"{pascal_case(self.store_path_prefix)}App",
+            service_name=f"{pascal_case(self.env.APP_NAME)}App",
             load_balancer_name=f"{kebab_case(self.store_path_prefix)}-lb",
             # certificate=certificate,
             memory_limit_mib=self.mem_cpu.mem,
@@ -226,22 +226,23 @@ class ECS(Resource):
             load_balanced_fargate_service.target_group.configure_health_check(
                 port=str(self.service_port), path=health_check_path
             )
+        return load_balanced_fargate_service
 
     def create_task_image_options(
         self,
         dockerfile_name="Dockerfile",
         repository_dir=None,
         secret_mapping: dict = {},
+        entrypoint: list[str] | None = None,
     ) -> ecs_patterns.ApplicationLoadBalancedTaskImageOptions:
-        container_asset = self._create_container_asset(
-            dockerfile_name, repository_dir
-        )
+        container_asset = self._create_container_asset(dockerfile_name, repository_dir)
         return ecs_patterns.ApplicationLoadBalancedTaskImageOptions(
             image=ecs.ContainerImage.from_docker_image_asset(container_asset),
             environment=self.env.to_dict(),
             secrets=secret_mapping,
             container_port=self.service_port,
             container_name=f"{kebab_case(self.store_path_prefix)}-app",
+            entry_point=entrypoint if entrypoint else None,
         )
 
     def _create_container_asset(
@@ -260,13 +261,39 @@ class ECS(Resource):
         )
 
     def create_secret_mapping(
-        self, secret: secrets.Secret = None, rds_secret: secrets.Secret = None
+        self, secret: secrets.Secret, fields: list[str | tuple[str, str]]
     ) -> dict:
-        map_secrets = {}
-        if secret:
-            map_secrets["SECRET"] = ecs.Secret.from_secrets_manager(secret)
-        if rds_secret:
-            map_secrets["RDS_CREDENTIALS"] = ecs.Secret.from_secrets_manager(
-                rds_secret
-            )
-        return map_secrets
+        """
+        Create a mapping of secret fields to ECS secrets.
+        :param secret: The Secrets Manager secret.
+        :param fields: A list of tuples where each tuple contains the field name (to set a ENV var) and the secret field name.
+        :return: A dictionary mapping field names to ECS secrets.
+        """
+        for field in fields:
+            if isinstance(field, str):
+                field = (field, field)
+            if len(field) != 2:
+                raise ValueError(
+                    "Each field must be a tuple of (env_var_name, secret_field_name)"
+                )
+
+        return {
+            field[0]: ecs.Secret.from_secrets_manager(secret, field=field[1])
+            for field in fields
+        }
+
+    def create_secret_mapping_from_parameter(
+        self, key_field, parameter_name: str
+    ) -> dict:
+        param = ssm.StringParameter.from_string_parameter_name(
+            self, f"SecretMappingParam{key_field}", string_parameter_name=parameter_name
+        )
+        return {key_field: ecs.Secret.from_ssm_parameter(param)}
+
+    def consolidate_secret_mapping(
+        self, secret_mapping: dict, *additional_mapping: dict
+    ) -> dict:
+        consolidated_mapping = secret_mapping.copy()
+        for mapping in additional_mapping:
+            consolidated_mapping.update(mapping)
+        return consolidated_mapping

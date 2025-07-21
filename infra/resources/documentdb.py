@@ -5,6 +5,16 @@ from .secret_manager import SecretManager
 
 from .resourse import Resource, PathStrFormat
 
+DOCUMENT_DB_SECRET_FIELDS = [
+    ("MONGO_DB_CLUSTER_IDENTIFIER", "dbClusterIdentifier"),
+    ("MONGO_PASSWORD", "password"),
+    ("MONGO_ENGINE", "engine"),
+    ("MONGO_PORT", "port"),
+    ("MONGO_HOST", "host"),
+    ("MONGO_SSL", "ssl"),
+    ("MONGO_USERNAME", "username"),
+]
+
 
 class DocumentDB(Resource):
 
@@ -23,7 +33,7 @@ class DocumentDB(Resource):
     def _create_db_security_group(self):
         vpc_cidr = self._vpc.vpc_cidr_block
         db_sg = ec2.SecurityGroup(
-            self,
+            self.scope,
             "MongoDBSecurityGroup",
             vpc=self._vpc,
             allow_all_outbound=True,
@@ -40,16 +50,18 @@ class DocumentDB(Resource):
             self.scope,
             f"{self.store_path_prefix_combined}Cluster",
             master_user=docdb.Login(
-                username="admin",
+                username="myuser",
                 secret_name=self.get_secret_name(),
                 exclude_characters='"/@:[]#!*',
             ),
             instance_type=ec2.InstanceType.of(
                 ec2.InstanceClass.T3, ec2.InstanceSize.MEDIUM
             ),
-            vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
+            vpc_subnets=ec2.SubnetSelection(
+                subnet_type=ec2.SubnetType.PRIVATE_WITH_EGRESS
+            ),
             vpc=self._vpc,
-            security_groups=[self._create_db_security_group()],
+            security_group=self._create_db_security_group(),
             deletion_protection=True,
         )
 
@@ -59,7 +71,7 @@ class DocumentDB(Resource):
     def create(self):
         self.db_cluster = self._create_documentdb_cluster()
         # Store secret ARN in Parameter Store
-        parameters_store = ParametersStore(self.scope)
+        parameters_store = ParametersStore(self.scope, self.env)
         parameters_store.create_parameter(
             self.get_secret_name(), self.db_cluster.secret.secret_arn
         )
