@@ -10,7 +10,10 @@ The created connection will have an ARN similar to this:
 Save the final value (`1a2b3c4d-5e6f-7890-1a2b-3c4d5e6f7890` in this example) to be used shortly.
 
 2. Edit the file `infra/aws/application/constants.py`, updating the general variables and those related to your AWS account and deployment target (development/staging/production).  
-In the first three lines (general variables), if needed, change only the third line (`GIT_REPOSITORY`), which should contain the name of your Git repository.  
+In the first three lines (general variables):
+Change the first line (`APP_NAME`) with your project name
+The second (`REP_DIR`) contains the name of the folder where your project source code will be, but if it is all in the root, leave it blank ("")
+On the third line (`GIT_REPOSITORY`), should contain the name of your Git repository.  
 
 Now let’s suppose you want to deploy only to a test/development AWS account. In this case, look at lines 5, 6, and 7:  
 On line 5, the variable `DEV_VPC_ID` should contain the ID of the VPC where your project infrastructure will be installed. Let's suppose it's: `vpc-090bfb252383707aa`  
@@ -20,9 +23,9 @@ On line 7, the variable `DEV_TRACKING_BRANCH` is the repository branch the AWS C
 Thus, the file would look like this:
 
 ```python
-APP_NAME = "meteor-react"
-REP_DIR = ""
-GIT_REPOSITORY = "quavedev/code-challenge-rubensm1"
+APP_NAME = "infra-cdk"
+REP_DIR = "repositories"
+GIT_REPOSITORY = "rubensm1/infra-aws-cdk"
 
 DEV_VPC_ID = "vpc-090bfb252383707aa"
 DEV_GITHUB_CONNECTION_UUID = "1a2b3c4d-5e6f-7890-1a2b-3c4d5e6f7890"
