@@ -1,4 +1,4 @@
-APP_NAME = "InfraCDK"
+APP_NAME = "infra-cdk"
 REP_DIR = "repositories"
 GIT_REPOSITORY = "rubensm1/infra-aws-cdk"
 
