@@ -11,16 +11,16 @@ Save the final value (`1a2b3c4d-5e6f-7890-1a2b-3c4d5e6f7890` in this example) to
 
 2. Edit the file `infra/aws/application/constants.py`, updating the general variables and those related to your AWS account and deployment target (development/staging/production).  
 In the first three lines (general variables):
-Change the first line (`APP_NAME`) with your project name
-The second (`REP_DIR`) contains the name of the folder where your project source code will be, but if it is all in the root, leave it blank ("")
-On the third line (`GIT_REPOSITORY`), should contain the name of your Git repository.  
+- Change the first line (`APP_NAME`) with your project name
+- The second (`REP_DIR`) contains the name of the folder where your project source code will be, but if it is all in the root, leave it blank ("")
+- On the third line (`GIT_REPOSITORY`), should contain the name of your Git repository.  
 
 Now let’s suppose you want to deploy only to a test/development AWS account. In this case, look at lines 5, 6, and 7:  
-On line 5, the variable `DEV_VPC_ID` should contain the ID of the VPC where your project infrastructure will be installed. Let's suppose it's: `vpc-090bfb252383707aa`  
-On line 6, the variable `DEV_GITHUB_CONNECTION_UUID` is the final part of the GitHub Connection ARN (step 1), in this case: `1a2b3c4d-5e6f-7890-1a2b-3c4d5e6f7890`  
-On line 7, the variable `DEV_TRACKING_BRANCH` is the repository branch the AWS CI/CD pipeline will track to obtain the source code for deployment. Here, we’ll keep `dev`, but it could be any valid branch name.
+- On line 5, the variable `DEV_VPC_ID` should contain the ID of the VPC where your project infrastructure will be installed. Let's suppose it's: `vpc-090bfb252383707aa`
+- On line 6, the variable `DEV_GITHUB_CONNECTION_UUID` is the final part of the GitHub Connection ARN (step 1), in this case: `1a2b3c4d-5e6f-7890-1a2b-3c4d5e6f7890`  
+- On line 7, the variable `DEV_TRACKING_BRANCH` is the repository branch the AWS CI/CD pipeline will track to obtain the source code for deployment. Here, we’ll keep `dev`, but it could be any valid branch name.
 
-Thus, the file would look like this:
+    Thus, the file would look like this:
 
 ```python
 APP_NAME = "infra-cdk"
